@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+scikit-learn
+pandas
+numpy
+joblib
+argopy
+xarray
+netCDF4
+h5netcdf
