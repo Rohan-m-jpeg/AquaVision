@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import ssl
 from urllib.error import HTTPError
 import requests
+from requests.exceptions import ConnectionError as ReqConnectionError
 
 def get_ocean_name(lat, lon):
     try:
@@ -62,6 +63,7 @@ def predict_ocean_data(request: PredictRequest):
     df = pd.DataFrame()
     current_radius = request.radius
     url = ""
+    network_error = False
     
     # Auto-expanding net capped to 6.0 radius to strictly enforce sub-2-second API roundtrips
     while current_radius <= 6.0:
@@ -80,17 +82,29 @@ def predict_ocean_data(request: PredictRequest):
         )
         
         try:
-            temp_df = pd.read_csv(url)
-            if not temp_df.empty:
-                df = temp_df
-                break
+            # We use requests for better status code control and explicit timeout management
+            response = requests.get(url, timeout=4.0)
+            if response.status_code == 200:
+                import io
+                temp_df = pd.read_csv(io.StringIO(response.text))
+                if not temp_df.empty:
+                    df = temp_df
+                    break
+            elif response.status_code in [404, 400]:
+                # Land or invalid region, allow the loop to expand the radius or exit
+                pass
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            network_error = True
+            break
         except Exception:
-            pass  # Data miss, suppress error and instantly scale net bounds larger
+            pass  # Generic data miss
             
         current_radius += 2.0
         
     if df.empty:
-        return {"error": "No ocean data found at this location. Please click a deep ocean region further from land."}
+        if network_error:
+            return {"error": "No internet connection detected. Please check your network and try again."}
+        return {"error": "No ocean data found at this location. Please click a region further from land."}
         
     # Map ERDDAP columns
     df['timestamp'] = pd.to_datetime(df['time (UTC)'])

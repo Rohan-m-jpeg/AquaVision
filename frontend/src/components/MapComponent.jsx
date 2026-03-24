@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, Rectangle, CircleMarker, Tooltip, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, Rectangle, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -24,15 +24,21 @@ function LocationSelector({ position, setPosition }) {
 }
 
 export default function MapComponent({ position, setPosition, predictionData, radius = 4.0 }) {
-  // Global ocean view — click anywhere in the world
   const center = [20, 0];
 
   return (
     <div style={{ padding: 0, overflow: 'hidden', borderRadius: '20px' }}>
-      <MapContainer center={center} zoom={2} style={{ height: '380px', width: '100%', zIndex: 0 }}>
+      <MapContainer 
+        center={center} 
+        zoom={2} 
+        minZoom={2}
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
+        style={{ height: '520px', width: '100%', zIndex: 0 }}
+      >
         <TileLayer
-          attribution='&copy; <a href="https://carto.com/">CartoDB Voyager</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://carto.com/">CartoDB Positron</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
         <LocationSelector position={position} setPosition={setPosition} />
         
@@ -42,7 +48,7 @@ export default function MapComponent({ position, setPosition, predictionData, ra
               [position.lat - radius, position.lng - radius],
               [position.lat + radius, position.lng + radius]
             ]}
-            pathOptions={{ color: '#ff4081', weight: 2, dashArray: '5, 8', fillOpacity: 0.05 }}
+            pathOptions={{ color: '#2d9c6f', weight: 2, dashArray: '6, 8', fillOpacity: 0.04, fillColor: '#2d9c6f' }}
           />
         )}
         
@@ -51,21 +57,21 @@ export default function MapComponent({ position, setPosition, predictionData, ra
             key={i} 
             center={[pt.latitude, pt.longitude]} 
             radius={4} 
-            pathOptions={{ color: '#00e5ff', fillColor: '#00e5ff', fillOpacity: 0.8 }}
+            pathOptions={{ color: '#2d9c6f', fillColor: '#2d9c6f', fillOpacity: 0.7, weight: 1.5 }}
           >
             <Popup>
-              <div style={{ padding: '4px', textAlign: 'center', minWidth: '150px' }}>
-                <div style={{ background: '#111418', color: '#00e5ff', padding: '6px 10px', borderRadius: '6px', marginBottom: '10px', fontWeight: '800', letterSpacing: '0.5px' }}>
-                  ID: {pt.platform_number || 'Unknown'}
+              <div style={{ padding: '6px', textAlign: 'center', minWidth: '150px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                <div style={{ background: '#1a2332', color: '#38d99a', padding: '6px 12px', borderRadius: '10px', marginBottom: '10px', fontWeight: '700', fontSize: '0.8rem', letterSpacing: '0.3px' }}>
+                  Float #{pt.platform_number || 'Unknown'}
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#556270', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.8rem', color: '#6b7b8d', marginBottom: '6px' }}>
                   <strong>Recorded:</strong> {pt.timestamp}
                 </div>
-                <div style={{ fontSize: '1.2rem', color: '#ff5722', fontWeight: '900', marginBottom: '8px' }}>
+                <div style={{ fontSize: '1.3rem', color: '#e8734a', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.5px' }}>
                   {pt.temperature.toFixed(2)} °C
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#79838c', borderTop: '1px solid #e0e6ed', paddingTop: '6px' }}>
-                  Hardware: IFREMER Autonomous
+                <div style={{ fontSize: '0.7rem', color: '#9ba8b4', borderTop: '1px solid #eef2f0', paddingTop: '6px' }}>
+                  Source: IFREMER ERDDAP
                 </div>
               </div>
             </Popup>

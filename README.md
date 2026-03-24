@@ -2,9 +2,9 @@
 
 A full-stack AI-powered web application for **global ocean prediction** using live Argo float data from IFREMER ERDDAP.
 
-![AquaVision Preview](image.png)
+![AquaVision Dashboard](assets/dashboard_overview.png)
 
-![Graph Preview](image-1.png)
+![Forecast Insights](assets/forecast_insights.png)
 
 ---
 

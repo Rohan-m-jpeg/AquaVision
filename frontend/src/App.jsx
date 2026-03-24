@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import MapComponent from './components/MapComponent';
 import Dashboard from './components/Dashboard';
@@ -11,10 +11,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [predictionData, setPredictionData] = useState(null);
   const [error, setError] = useState(null);
+  const [activeSection, setActiveSection] = useState('map');
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('aquavision_dark_mode');
     return saved === 'true';
   });
+
+  const mapRef = useRef(null);
+  const dashboardRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('aquavision_dark_mode', darkMode);
@@ -32,6 +36,11 @@ function App() {
       }, 100);
     }
   }, [predictionData]);
+
+  const scrollTo = (ref, section) => {
+    setActiveSection(section);
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const handlePredict = async () => {
     if (!position) {
@@ -67,109 +76,146 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-        <h1 className="logo-text" style={{ marginBottom: 0 }}>AquaVision</h1>
-        <button onClick={() => setDarkMode(!darkMode)} style={{ background: 'var(--btn-bg)', border: 'none', padding: '10px 16px', borderRadius: '20px', color: 'var(--text-main)', cursor: 'pointer', fontWeight: '700', transition: 'all 0.2s', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-          {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-        </button>
-      </header>
+    <>
+      {/* Sidebar — functional scroll navigation */}
+      <nav className="sidebar">
+        <button
+          className={`sidebar-icon ${activeSection === 'map' ? 'active' : ''}`}
+          title="Map & Controls"
+          onClick={() => scrollTo(mapRef, 'map')}
+        >🗺️</button>
+        <button
+          className={`sidebar-icon ${activeSection === 'dashboard' ? 'active' : ''}`}
+          title="Forecast Dashboard"
+          onClick={() => { if (dashboardRef.current) scrollTo(dashboardRef, 'dashboard'); }}
+        >📊</button>
+      </nav>
 
-      <div className="dashboard-grid">
-        
-        {/* Left Column: Controls */}
-        <div className="white-card" style={{ height: 'fit-content' }}>
-          <div className="card-header">
-            <h2 className="card-title">Forecast Parameters</h2>
+      {/* Main Content */}
+      <div className="app-container">
+        <header className="app-header">
+          <div className="header-empty"></div>
+          <h1 className="logo-text">AquaVision</h1>
+          <div className="header-right">
+            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
           </div>
+        </header>
+
+        <div className="dashboard-grid" ref={mapRef}>
           
-          <div style={{ marginBottom: '2.5rem' }}>
-            <div className="label-container">
-              <span>Depth Level</span>
+          {/* Left Column: Controls */}
+          <div className="white-card" style={{ height: 'fit-content' }}>
+            <div className="card-header">
+              <h2 className="card-title">Forecast Parameters</h2>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-              <input 
-                type="range" 
-                min="0" max="2000" step="10" 
-                value={depth} 
-                onChange={(e) => setDepth(parseInt(e.target.value))} 
-              />
-              <span className="dark-pill">{depth}m</span>
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <div className="label-container">
+                <span>Depth Level</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <input 
+                  type="range" 
+                  min="0" max="2000" step="10" 
+                  value={depth} 
+                  onChange={(e) => setDepth(parseInt(e.target.value))} 
+                />
+                <span className="dark-pill">{depth}m</span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <div className="label-container">
+                <span>Prediction Horizon</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <input 
+                  type="range" 
+                  min="1" max="30" step="1" 
+                  value={days} 
+                  onChange={(e) => setDays(parseInt(e.target.value))} 
+                />
+                <span className="dark-pill">{days}d</span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <div className="label-container">
+                <span>Historical Lookback</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.25rem' }}>
+                <input 
+                  type="range" 
+                  min="30" max="180" step="10" 
+                  value={lookback} 
+                  onChange={(e) => setLookback(parseInt(e.target.value))} 
+                />
+                <span className="dark-pill">{lookback} Days</span>
+              </div>
+            </div>
+
+            <button 
+              className="btn-primary"
+              onClick={handlePredict}
+              disabled={loading}
+            >
+              {loading ? 'Analyzing Data...' : 'Generate Forecast'}
+            </button>
+
+            {error && <p className="error-text">{error}</p>}
+          </div>
+
+          {/* Right Column: Map */}
+          <div>
+            <div className="white-card" style={{ padding: '1.25rem' }}>
+              <div className="card-header" style={{ marginBottom: '0.75rem', padding: '0 0.5rem' }}>
+                <h2 className="card-title">Select Ocean Region</h2>
+                {position && (
+                  <span className="dark-pill" style={{ letterSpacing: '0.5px' }}>
+                    📍 {position.lat.toFixed(3)}° , {position.lng.toFixed(3)}°
+                  </span>
+                )}
+              </div>
+              <div className="map-wrapper">
+                <MapComponent position={position} setPosition={setPosition} predictionData={predictionData} radius={4.0} />
+                {/* Stat pill overlays on map */}
+                {predictionData && (
+                  <div className="map-stat-overlay">
+                    <div className="map-stat-pill">
+                      <span className="pill-value">{predictionData.data_points?.toLocaleString()}</span>
+                      <span className="pill-label">Records Fetched</span>
+                    </div>
+                    <div className="map-stat-pill">
+                      <span className="pill-value">{predictionData.unique_floats}</span>
+                      <span className="pill-label">Unique Floats</span>
+                    </div>
+                    <div className="map-stat-pill">
+                      <span className="pill-value">{predictionData.historical_avg_temp}°C</span>
+                      <span className="pill-label">Avg Temp</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div style={{ marginBottom: '2.5rem' }}>
-            <div className="label-container">
-              <span>Prediction Horizon</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-              <input 
-                type="range" 
-                min="1" max="30" step="1" 
-                value={days} 
-                onChange={(e) => setDays(parseInt(e.target.value))} 
-              />
-              <span className="dark-pill">{days}d</span>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '2.5rem' }}>
-            <div className="label-container">
-              <span>Historical Lookback Volume</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-              <input 
-                type="range" 
-                min="30" max="180" step="10" 
-                value={lookback} 
-                onChange={(e) => setLookback(parseInt(e.target.value))} 
-              />
-              <span className="dark-pill" style={{ color: '#00e5ff' }}>{lookback} Days</span>
-            </div>
-          </div>
-
-          <button 
-            className="btn-primary"
-            onClick={handlePredict}
-            disabled={loading}
-          >
-            {loading ? 'Analyzing Data...' : 'Generate Forecast'}
-          </button>
-
-          {error && <p className="error-text">{error}</p>}
         </div>
 
-        {/* Right Column: Map */}
-        <div>
-          <div className="white-card">
-            <div className="card-header" style={{ marginBottom: '1rem' }}>
-              <h2 className="card-title">Map Preview</h2>
-              {position && (
-                <span className="dark-pill" style={{ letterSpacing: '1px' }}>
-                  {position.lat.toFixed(3)}° , {position.lng.toFixed(3)}°
-                </span>
-              )}
-            </div>
-            <div style={{ position: 'relative', zIndex: 1, borderRadius: '20px', overflow: 'hidden' }}>
-              <MapComponent position={position} setPosition={setPosition} predictionData={predictionData} radius={4.0} />
-            </div>
+        {loading && (
+          <div className="loading-overlay">
+            <div className="spinner"></div>
           </div>
-        </div>
-
+        )}
+        
+        {predictionData && !loading && (
+          <div id="dashboard-results" ref={dashboardRef}>
+            <Dashboard predictionData={predictionData} darkMode={darkMode} />
+          </div>
+        )}
       </div>
-
-      {loading && (
-        <div className="loading-overlay">
-          <div className="spinner"></div>
-        </div>
-      )}
-      
-      {predictionData && !loading && (
-        <div id="dashboard-results">
-          <Dashboard predictionData={predictionData} darkMode={darkMode} />
-        </div>
-      )}
-    </div>
+    </>
   );
 }
 
