@@ -12,12 +12,13 @@ A full-stack AI-powered web application for **global ocean prediction** using li
 
 - **Global Ocean Forecasting** — Click anywhere on the world map to generate temperature & salinity forecasts
 - **Live ARGO Data** — Pulls real-time data from IFREMER's ERDDAP database (no mock data)
+- **Dark / Light Mode** — Toggle with persisted preference
 - **Marine Heatwave Detection** — Three severity tiers: Moderate (Amber), Strong (Orange), and Severe (Red)
 - **Depth Thermocline Profile** — Visualizes how temperature changes with ocean depth
 - **Historical Temperature Tracking** — Charts actual float-recorded temperatures over the past 90 days
 - **Auto-Expanding Search** — Dynamically widens the search radius up to 6° to find nearby float data
 - **Reverse Geocoding** — Labels forecast results with the geographic ocean/region name
-- **Dark / Light Mode** — Toggle with persisted preference
+
 
 ---
 
