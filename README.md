@@ -26,7 +26,8 @@ A full-stack AI-powered web application for **global ocean prediction** using li
 ```
 AquaVision/
 ├── backend/
-│   └── main.py              # FastAPI server — data fetching, prediction, heatwave logic
+│   ├── main.py              # FastAPI server — data fetching, prediction, heatwave logic
+│   └── requirements.txt     # Python dependencies
 ├── frontend/
 │   └── src/
 │       ├── App.jsx           # Main app — controls, state management, API calls
@@ -36,8 +37,7 @@ AquaVision/
 │       ├── index.css         # Global styles — dark/light themes, responsive design
 │       └── main.jsx          # React entry point
 ├── start_backend.bat         # One-click backend launcher
-├── start_frontend.bat        # One-click frontend launcher
-└── requirements.txt          # Python dependencies
+└── start_frontend.bat        # One-click frontend launcher
 ```
 
 ---
