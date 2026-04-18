@@ -40,7 +40,7 @@ export default function MapComponent({ position, setPosition, predictionData, ra
     let cancelled = false;
     const poll = async () => {
       try {
-        const res = await axios.get('http://localhost:8012/heatmap/status', { timeout: 2000 });
+        const res = await axios.get('https://aquavision-abj8.onrender.com/heatmap/status', { timeout: 2000 });
         if (!cancelled && res.data.status === 'ready') {
           setHeatmapStatus(prev => (prev === 'idle' ? 'precached' : prev));
           return; // stop polling
@@ -64,7 +64,7 @@ export default function MapComponent({ position, setPosition, predictionData, ra
     setHeatmapVisible(true);
 
     try {
-      const res = await axios.get('http://localhost:8012/heatmap', { timeout: 45000 });
+      const res = await axios.get('https://aquavision-abj8.onrender.com/heatmap', { timeout: 45000 });
       if (res.data.error || !res.data.points?.length) {
         setHeatmapStatus('error');
         return;

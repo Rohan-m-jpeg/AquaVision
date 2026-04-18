@@ -63,7 +63,7 @@ AquaVision/
 
 **1. Start the Backend**
 Double-click `start_backend.bat` or run from terminal.
-→ API available at **http://localhost:8012**
+→ API available at **https://aquavision-abj8.onrender.com**
 
 **2. Start the Frontend**
 Double-click `start_frontend.bat` or run from terminal.

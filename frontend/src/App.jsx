@@ -51,7 +51,7 @@ function App() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8012/predict', {
+      const response = await axios.post('https://aquavision-abj8.onrender.com/predict', {
         lat: position.lat,
         lon: position.lng,
         depth: depth,
